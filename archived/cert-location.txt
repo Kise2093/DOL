@@ -1,0 +1,7 @@
+/etc/docker/certs.d/pipr-uat-nexusrepos.dol.go.th
+
+/root/cert
+
+pipr-uat-nexusrepos.dol.go.th
+
+pipr-uat-gitlab.dol.go.th

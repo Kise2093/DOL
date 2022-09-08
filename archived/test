@@ -1,0 +1,27 @@
+helm install gitlab gitlab/gitlab --namespace gitlab --version 6.3.1 \
+--timeout 600s \
+--set global.edition=ce \
+--set global.ingress.configureCertmanager=false \
+--set global.certificates.customCAs[0].secret=ingress-cert-gitlab \
+--set gitlab-runner.install=false \
+--set global.kas.enabled=true \
+--set global.initialRootPassword.secret=gitlab-initial-root-password \
+--set global.hosts.gitlab.name=pipr-uat-gitlab.dol.go.th \
+--set global.hosts.registry.name=pipr-uat-registry.dol.go.th \
+--set global.hosts.minio.name=pipr-uat-minio.dol.go.th \
+--set global.hosts.kas.name=pipr-uat-kas.dol.go.th
+
+
+
+--set global.hosts.domain=dol.go.th \
+
+--set global.ingress.tls.secretName=ingress-cert-gitlab \
+--set gitlab.webservice.ingress.tls.secretName=ingress-cert-gitlab \
+--set registry.ingress.tls.secretName=ingress-cert-gitlab \
+--set minio.ingress.tls.secretName=ingress-cert-gitlab \
+
+helm -n gitlab install gitlab gitlab/gitlab --version 6.2.0 \
+--timeout 600s \
+--set global.ingress.configureCertmanager=false \
+--set global.kubectl.image.tag=1.18.20@sha256:98c8b5316ed18575f5f54b2180f9c967e501dfe3e54646e53e4be2e34aac9536
+--set global.certificates.image.tag=20191127-r2@sha256:56d3c0dbd1d425f24b21f38cb8d68864ca2dd1a3acc28b65d0be2c2197819a6a

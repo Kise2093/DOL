@@ -1,0 +1,61 @@
+helm repo add gitlab https://charts.gitlab.io/
+helm repo update
+
+kubectl create namespace gitlab
+k -n gitlab create secret tls ingress-cert-gitlab \
+--key /root/cert/dol.go.th.key \
+--cert /root/cert/dol.go.th.crt
+kubectl create secret generic gitlab-initial-root-password --from-literal=password="admin123" -n gitlab
+
+
+k -n gitlab create secret generic custom-ca --from-file=unique_name=/root/cert/custom-ca.pem
+
+helm install gitlab gitlab/gitlab --namespace gitlab --wait \
+  --set certmanager.install=false \
+  --set gitlab-runner.install=false \
+  --set gitlab.gitaly.persistence.size=1Gi \
+  --set gitlab.unicorn.ingress.enabled=false \
+  --set global.appConfig.cron_jobs.ci_archive_traces_cron_worker.cron="17 * * * *" \
+  --set global.appConfig.cron_jobs.expire_build_artifacts_worker.cron="50 * * * *" \
+  --set global.appConfig.cron_jobs.pipeline_schedule_worker.cron="19 * * * *" \
+  --set global.appConfig.cron_jobs.repository_archive_cache_worker.cron="0 * * * *" \
+  --set global.appConfig.cron_jobs.repository_check_worker.cron="20 * * * *" \
+  --set global.appConfig.cron_jobs.stuck_ci_jobs_worker.cron="0 * * * *" \
+  --set global.appConfig.gravatar.plainUrl="https://www.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon" \
+  --set global.appConfig.gravatar.sslUrl="https://secure.gravatar.com/avatar/%{hash}?s=%{size}&d=identicon" \
+  --set global.certificates.customCAs[0].secret=custom-ca \
+  --set global.edition=ce \
+  --set global.hosts.domain=dol.go.th \
+  --set global.ingress.configureCertmanager=false \
+  --set global.ingress.enabled=false \
+  --set global.initialRootPassword.secret=gitlab-initial-root-password \
+  --set minio.persistence.size=5Gi \
+  --set nginx-ingress.enabled=false \
+  --set postgresql.persistence.size=1Gi \
+  --set prometheus.install=false \
+  --set redis.persistence.size=1Gi \
+  --set registry.enabled=false
+   --set global.certificates.customCAs[0].secret=ingress-cert-gitlab \
+
+ 
+helm install gitlab gitlab/gitlab --namespace gitlab --version 5.8.2 \
+--timeout 600s \
+--set global.edition=ce \
+--set global.hosts.domain=dol.go.th \
+--set global.ingress.configureCertmanager=false \
+--set global.ingress.tls.secretName=ingress-cert-gitlab \
+--set gitlab.webservice.ingress.tls.secretName=ingress-cert-gitlab \
+--set registry.ingress.tls.secretName=ingress-cert-gitlab \
+--set minio.ingress.tls.secretName=ingress-cert-gitlab \
+--set gitlab-runner.install=false \
+--set global.kas.enabled=true \
+--set gitlab.unicorn.ingress.enabled=false \
+--set global.initialRootPassword.secret=gitlab-initial-root-password \
+--set registry.enabled=false \
+--namespace gitlab
+
+helm install --namespace gitlab gitlab-runner gitlab/gitlab-runner
+
+helm upgrade gitlab-runner \
+ --set certsSecretName=custom-ca \
+ --set gitlabUrl=https://pipr-uat-gitlab.dol.go.th/,runnerRegistrationToken=GR1348941SJDJBHHfEqxyiQp_jT1E gitlab/gitlab-runner -n gitlab

@@ -1,0 +1,41 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: nexus-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - pipr-uat-nexusrepos.dol.go.th
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: custom-ca
+    - hosts:
+        - pipr-uat-nexusrepos.dol.go.th
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+      tls:
+        httpsRedirect: false
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nexus-vs
+spec:
+  gateways:
+    - nexus-gateway
+  hosts:
+    - pipr-uat-nexusrepos.dol.go.th
+  http:
+    - route:
+      - destination:
+          host: nexus-rm-nexus-repository-manager
+          port:
+            number: 8081

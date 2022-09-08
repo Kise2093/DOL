@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: gitlab-gateway
+  namespace: gitlab
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 22
+      name: ssh-gitlab
+      protocol: TCP
+    hosts:
+    - "pipr-uat-gitlab.dol.go.th"
+  - port:
+      number: 80
+      name: http-gitlab
+      protocol: HTTP
+    hosts:
+    - "pipr-uat-gitlab.dol.go.th"
+    - "pipr-uat-minio.dol.go.th"
+    tls:
+      httpsRedirect: true
+  - port:
+      number: 443
+      name: https-gitlab
+      protocol: HTTPS
+    hosts:
+    - "pipr-uat-gitlab.dol.go.th"
+    - "pipr-uat-minio.dol.go.th"
+    tls:
+      mode: SIMPLE
+      privateKey: /root/cert/dol.go.th.key
+      serverCertificate: /root/cert/dol.go.th.crt

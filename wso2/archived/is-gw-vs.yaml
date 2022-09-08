@@ -1,0 +1,53 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: is-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - pipr-uat-mgt.dol.go.th
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      privateKey: /root/cert/dol.go.th.key
+      serverCertificate: /root/cert/dol.go.th.crt
+  - hosts:
+    - pipr-uat-mgt.dol.go.th
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+    tls:
+      httpsRedirect: false
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: is-virtualservice
+spec:
+  hosts:
+    - "pipr-uat-mgt.dol.go.th"
+  gateways:
+  - is-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /carbon
+    route:
+    - destination:
+        host: wso2is-pattern-1-identity-service
+        port:
+          number: 9763
+
+
+
+  - route:
+    - destination:
+        host: wso2is-pattern-1-identity-service
+        port:
+          number: 9763

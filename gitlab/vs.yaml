@@ -1,0 +1,60 @@
+apiVersion: networking.istio.io/v1beta1
+  kind: VirtualService
+  metadata:
+    name: gitlab-http-virtual-service
+    namespace: gitlab
+  spec:
+    gateways:
+    - gitlab-gateway
+    hosts:
+    - pipr-uat-gitlab.dol.go.th
+    http:
+    - match:
+      - uri:
+          prefix: /admin/sidekiq
+      route:
+      - destination:
+          host: gitlab-webservice-default
+          port:
+            number: 8080
+    - route:
+      - destination:
+          host: gitlab-webservice-default
+          port:
+            number: 8181
+---
+ apiVersion: networking.istio.io/v1beta1
+  kind: VirtualService
+  metadata:
+    name: gitlab-minio-virtual-service
+    namespace: gitlab
+  spec:
+    gateways:
+    - gitlab-gateway
+    hosts:
+    - pipr-uat-minio.dol.go.th
+    http:
+    - route:
+      - destination:
+          host: gitlab-minio-svc.gitlab.svc.cluster.local
+          port:
+            number: 9000
+--- 
+apiVersion: networking.istio.io/v1beta1
+  kind: VirtualService
+  metadata:
+    name: gitlab-ssh-virtual-service
+    namespace: gitlab
+  spec:
+    gateways:
+    - gitlab-gateway
+    hosts:
+    - pipr-uat-gitlab.dol.go.th
+    tcp:
+    - match:
+      - port: 22
+      route:
+      - destination:
+          host: gitlab-gitlab-shell.gitlab.svc.cluster.local
+          port:
+            number: 22

@@ -1,0 +1,36 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: apim-mgt-virtualservice
+spec:
+  hosts:
+    - "pipr-uat-mgt.dol.go.th"
+  gateways:
+  - apim-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /publisher
+    - uri:
+        prefix: /devportal
+    route:
+    - destination:
+        host: wso2am-pattern-3-am-cp-service
+        port:
+          number: 9763
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: apim-gateway-virtualservice
+spec:
+  hosts:
+    - "pipr-uat-gateway.dol.go.th"
+  gateways:
+  - apim-gateway
+  http:
+  - route:
+    - destination:
+        host: choreo-choreo-connect-router
+        port:
+          number: 9095

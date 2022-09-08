@@ -1,0 +1,153 @@
+
+
+
+Install Helm3
+
+Install wso2
+
+helm repo add wso2 https://helm.wso2.com && helm repo update
+
+helm upgrade --install patt-3 wso2/am-pattern-3 --version 4.1.0-1 --namespace wso --create-namespace \
+--set wso2.deployment.am.gateway.ingress.hostname=pipr-uat-gateway.dol.go.th \
+--set wso2.deployment.am.cp.ingress.hostname=pipr-uat-mgt.dol.go.th \
+--set wso2.deployment.am.websub.ingress.hostname=pipr-uat-websub.dol.go.th \
+--set wso2.deployment.mi.ingress.management.hostname=pipr-uat-management.dol.go.th \
+--set wso2.deployment.persistentRuntimeArtifacts.storageClass=nfs-client \
+--set wso2.deployment.persistentRuntimeArtifacts.apacheSolrIndexing.enabled=true
+
+
+Install Choreo
+
+helm upgrade --install choreo wso2/choreo-connect --version 1.1.0-6 --namespace wso \
+--set wso2.deployment.mode=APIM_AS_CP \
+--set wso2.apim.controlPlane.hostName=pipr-uat-mgt.dol.go.th \
+--set wso2.apim.controlPlane.serviceName=wso2am-pattern-3-am-cp-1-service \
+--set wso2.deployment.gatewayRuntime.router.ingress.hostname=pipr-uat-gateway.dol.go.th
+
+
+Install Identify Server
+
+helm upgrade --install patt-1-is wso2/is-pattern-1 --version 5.11.0-5 --namespace wso2 \
+--set wso2.deployment.wso2is.ingress.identity.hostname=pipr-uat-kas.dol.go.th \
+--set wso2.deployment.persistentRuntimeArtifacts.storageClass=nfs-client
+
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: argocd-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - pipr-uat-argo.dol.go.th
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: custom-ca
+    - hosts:
+        - pipr-uat-argo.dol.go.th
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+      tls:
+        httpsRedirect: true
+
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: argocd
+spec:
+  gateways:
+    - argocd-gateway
+  hosts:
+    - pipr-uat-argo.dol.go.th
+  http:
+    - route:
+      - destination:
+          host: argocd-server
+          port:
+            number: 80
+
+
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: nexus-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - pipr-uat-nexusrepos.dol.go.th
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: custom-ca
+    - hosts:
+        - pipr-uat-nexusrepos.dol.go.th
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+      tls:
+        httpsRedirect: false
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nexus-vs
+spec:
+  gateways:
+    - nexus-gateway
+  hosts:
+    - pipr-uat-nexusrepos.dol.go.th
+  http:
+    - route:
+      - destination:
+          host: nexus-rm-nexus-repository-manager
+          port:
+            number: 8081
+
+
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: apim-mgt-virtualservice
+spec:
+  hosts:
+    - "pipr-uat-mgt.dol.go.th"
+  gateways:
+  - apim-gateway
+  http:
+  - route:
+    - destination:
+        host: wso2am-pattern-3-am-cp-service
+        port:
+          number: 9763
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: apim-gateway-virtualservice
+spec:
+  hosts:
+    - "pipr-uat-gateway.dol.go.th"
+  gateways:
+  - apim-gateway
+  http:
+  - route:
+    - destination:
+        host: choreo-choreo-connect-router
+        port:
+          number: 9000
