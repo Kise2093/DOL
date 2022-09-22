@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: docker-vs
+spec:
+  gateways:
+    - nexus-gateway
+  hosts:
+    - pipr-uat-kas.dol.go.th
+  http:
+    - route:
+      - destination:
+          host: nexus-rm-nexus-repository-manager-docker-5000
+          port:
+            number: 5000

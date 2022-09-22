@@ -6,23 +6,24 @@ spec:
   selector:
     istio: ingressgateway
   servers:
-    - hosts:
-        - pipr-uat-nexusrepos.dol.go.th
-      port:
-        name: https
-        number: 443
-        protocol: HTTPS
-      tls:
-        mode: SIMPLE
-        credentialName: custom-ca
-    - hosts:
-        - pipr-uat-nexusrepos.dol.go.th
-      port:
-        name: http
-        number: 80
-        protocol: HTTP
-      tls:
-        httpsRedirect: false
+  - hosts:
+    - pipr-uat-nexusrepos.dol.go.th
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: custom-ca
+      mode: SIMPLE
+  - hosts:
+    - pipr-uat-nexusrepos.dol.go.th
+    - pipr-uat-kas.dol.go.th # change to domain that match docker hosted
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+    tls:
+      httpsRedirect: false
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
