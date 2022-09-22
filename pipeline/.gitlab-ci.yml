@@ -1,0 +1,8 @@
+before_script:
+  image: docker:latest
+  - cat hey.txt > what
+  - docker info
+build_image:
+  script:
+    - ls
+    - ls -a

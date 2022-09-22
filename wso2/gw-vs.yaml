@@ -2,13 +2,13 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: apim-gateway
-  namespace: wso
 spec:
   selector:
     istio: ingressgateway
   servers:
   - hosts:
     - pipr-uat-mgt.dol.go.th
+    - pipr-uat-gateway.dol.go.th
     port:
       name: https
       number: 443
@@ -18,6 +18,7 @@ spec:
       credentialName: custom-ca
   - hosts:
     - pipr-uat-mgt.dol.go.th
+    - pipr-uat-gateway.dol.go.th
     port:
       name: http
       number: 80
@@ -25,40 +26,37 @@ spec:
     tls:
       httpsRedirect: false
 ---
-apiVersion: networking.istio.io/v1beta1
-  kind: VirtualService
-  metadata:
-    name: apim-gateway-virtualservice
-    namespace: wso
-  spec:
-    gateways:
-    - apim-gateway
-    hosts:
-    - pipr-uat-gateway.dol.go.th
-    http:
-    - route:
-      - destination:
-          host: choreo-choreo-connect-router
-          port:
-            number: 9000
----
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: apim-mgt-virtualservice
-  namespace: wso
 spec:
+  hosts:
+    - "pipr-uat-mgt.dol.go.th"
   gateways:
   - apim-gateway
-  hosts:
-  - pipr-uat-mgt.dol.go.th
   http:
   - match:
     - uri:
-        prefix: /
+        prefix: "/"
     route:
     - destination:
-        host: wso2am-pattern-3-am-cp-service
+        host: pipr-uat-mgt.dol.go.th
         port:
           number: 9763
-
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: apim-gateway-virtualservice
+spec:
+  hosts:
+    - "pipr-uat-gateway.dol.go.th"
+  gateways:
+  - apim-gateway
+  http:
+  - route:
+    - destination:
+        host: choreo-choreo-connect-router
+        port:
+          number: 9000

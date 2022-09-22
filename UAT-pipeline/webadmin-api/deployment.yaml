@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: api-webadmin
+  name: api-webadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-webadmin
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: api-webadmin
+    spec:
+      containers:
+      - image: pipr-uat-kas.dol.go.th/repository/docker-hosted/api-webadmin
+        name: api-webadmin
+      imagePullSecrets:
+      - name: docker-registry-cred

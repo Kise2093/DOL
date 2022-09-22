@@ -1,0 +1,41 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: keycloak-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - pipr-uat-keycloak.dol.go.th
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: custom-ca
+    - hosts:
+        - pipr-uat-keycloak.dol.go.th
+      port:
+        name: http
+        number: 80
+        protocol: HTTP
+      tls:
+        httpsRedirect: false
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: keycloak-vs
+spec:
+  gateways:
+    - keycloak-gateway
+  hosts:
+    - pipr-uat-keycloak.dol.go.th
+  http:
+    - route:
+      - destination:
+          host: keycloak
+          port:
+            number: 80

@@ -1,0 +1,33 @@
+stages:
+  - build
+  - deploy
+image: docker:stable
+services:
+  - name: docker:dind
+    command: ["--tls=false"]
+variables:
+  DOCKER_DRIVER: overlay
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://127.0.0.1:2375
+before_script:
+  #- kubectl -h
+
+build_image:
+  stage: build
+  script:
+    - docker login -u admin -p P@ssw0rd https://pipr-uat-kas.dol.go.th/repository/docker-hosted
+    - mkdir what
+    - ls
+    - docker build -t test .
+    - docker tag test pipr-uat-kas.dol.go.th/repository/docker-hosted/test
+    - docker images
+    - docker push pipr-uat-kas.dol.go.th/repository/docker-hosted/test
+
+deploy:
+  image: bitnami/kubectl:latest
+  stage: deploy
+  script:     
+    - ls
+    - kubectl get pod
+    - kubectl get ns
+    - kubectl -n default apply -f deployment.yaml 

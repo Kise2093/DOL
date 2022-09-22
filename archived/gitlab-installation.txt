@@ -37,25 +37,37 @@ helm install gitlab gitlab/gitlab --namespace gitlab --wait \
   --set registry.enabled=false
    --set global.certificates.customCAs[0].secret=ingress-cert-gitlab \
 
- 
-helm install gitlab gitlab/gitlab --namespace gitlab --version 5.8.2 \
+ --version 5.8.2
+helm install gitlab gitlab/gitlab --namespace gitlab  \
 --timeout 600s \
 --set global.edition=ce \
 --set global.hosts.domain=dol.go.th \
 --set global.ingress.configureCertmanager=false \
---set global.ingress.tls.secretName=ingress-cert-gitlab \
---set gitlab.webservice.ingress.tls.secretName=ingress-cert-gitlab \
---set registry.ingress.tls.secretName=ingress-cert-gitlab \
---set minio.ingress.tls.secretName=ingress-cert-gitlab \
+--set global.ingress.tls.secretName=custom-ca \
+--set gitlab.webservice.ingress.tls.secretName=custom-ca \
+--set registry.ingress.tls.secretName=custom-ca \
+--set minio.ingress.tls.secretName=custom-ca \
 --set gitlab-runner.install=false \
 --set global.kas.enabled=true \
 --set gitlab.unicorn.ingress.enabled=false \
 --set global.initialRootPassword.secret=gitlab-initial-root-password \
 --set registry.enabled=false \
+--set global.hosts.gitlab.serviceName=pipr-uat-gitlab
 --namespace gitlab
 
 helm install --namespace gitlab gitlab-runner gitlab/gitlab-runner
 
-helm upgrade gitlab-runner \
- --set certsSecretName=custom-ca \
- --set gitlabUrl=https://pipr-uat-gitlab.dol.go.th/,runnerRegistrationToken=GR1348941SJDJBHHfEqxyiQp_jT1E gitlab/gitlab-runner -n gitlab
+helm upgrade --install gitlab-runner \
+ --set certsSecretName=ingress-cert-gitlab \
+ --set tls-ca-file=/root/cert/dol.go.th.crt \
+ --set gitlabUrl=https://pipr-uat-gitlab.dol.go.th/,runnerRegistrationToken=GR1348941TT8Lv57va4xjnvFtn-yz gitlab/gitlab-runner -n gitlab
+
+ k -n gitlab create secret generic dol-cert \
+ --from-file=/root/cert/dol.go.th.crt
+
+ kubectl create secret tls dol-secret --cert /root/cert/dol.go.th.crt
+
+ helm upgrade --install gitlab-runner gitlab/gitlab-runner -n gitlab -f values.yaml
+
+
+helm upgrade --install gitlab-runner-dol-pipr gitlab/gitlab-runner -n gitlab -f values.yaml

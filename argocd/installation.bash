@@ -5,6 +5,7 @@ kubectl label namespaces argo istio-injection=enabled
 
 kubectl -n argo create secret generic custom-ca --from-file=unique_name=/root/cert/custom-ca.pem
 
-kubectl -n nexusrepo apply -f gw.yaml
 
-kubectl -n nexusrepo apply -f vs.yaml
+kubectl -n argo apply -f gw.yaml
+
+kubectl -n argo apply -f vs.yaml

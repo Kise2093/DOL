@@ -7,7 +7,7 @@ helm repo add wso2 https://helm.wso2.com && helm repo update
 k -n wso create secret generic custom-ca --from-file=unique_name=/root/cert/custom-ca.pem
 kubectl label namespaces wso istio-injection=enabled
 
-helm upgrade --install patt-3 wso2/am-pattern-3 --version 4.1.0-1 --namespace wso --create-namespace \
+helm upgrade --install patt-3 wso2/am-pattern-3 --version 4.1.0-1 --namespace wso \
 --set wso2.deployment.am.gateway.ingress.hostname=pipr-uat-gateway.dol.go.th \
 --set wso2.deployment.am.cp.ingress.hostname=pipr-uat-mgt.dol.go.th \
 --set wso2.deployment.am.websub.ingress.hostname=pipr-uat-websub.dol.go.th \

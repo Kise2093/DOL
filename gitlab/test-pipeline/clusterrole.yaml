@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: "ClusterRole"
+metadata:
+  name: gitlab-runner-dol-pipr
+  namespace: gitlab
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: "ClusterRoleBinding"
+metadata:
+  name: gitlab-runner-dol-pipr
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: "ClusterRole"
+  name: gitlab-runner-dol-pipr
+subjects:
+- kind: ServiceAccount
+  name: gitlab-runner-dol-pipr
+  namespace: gitlab

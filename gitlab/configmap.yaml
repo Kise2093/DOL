@@ -1,0 +1,58 @@
+kubectl -n gitlab create configmap config --from-file /root/cert/dol.go.th.crt
+
+volumeMounts:
+- mountPath: /home/certs/dol.go.th.crt
+  name: config
+  subPath: dol.go.th.crt
+
+volumes:
+- name: config
+  configMap:
+    name: config
+
+
+
+ volumeMounts:
+        - mountPath: /secrets
+          name: projected-secrets
+        - mountPath: /home/gitlab-runner/.gitlab-runner
+          name: etc-gitlab-runner
+        - mountPath: /configmaps
+          name: configmaps
+        - mountPath: /home/gitlab-runner/.gitlab-runner/certs/
+          name: custom-certs
+          readOnly: true
+          subPath: custom-ca.pem
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 65533
+        runAsUser: 100
+      terminationGracePeriodSeconds: 3600
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: config
+        name: config
+      - emptyDir:
+          medium: Memory
+        name: runner-secrets
+      - emptyDir:
+          medium: Memory
+        name: etc-gitlab-runner
+      - name: projected-secrets
+        projected:
+          defaultMode: 420
+          sources:
+          - secret:
+              items:
+              - key: runner-registration-token
+                path: runner-registration-token
+              - key: runner-token
+                path: runner-token
+              name: gitlab-runner
+      - name: custom-certs
+        secret:
+          defaultMode: 420
+          secretName: custom-ca
