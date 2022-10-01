@@ -1,0 +1,3 @@
+deployment.toml: |-
+  [apim.oauth_config]
+  enable_token_encryption = true

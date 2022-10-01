@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: argo-server-pvc
+spec:
+  storageClassName: "nfs-client" # Empty string must be explicitly set otherwise default StorageClass will be set
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi
